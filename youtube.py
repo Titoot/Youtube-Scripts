@@ -4,7 +4,7 @@ import json
 import re
 
 def getID(url):
-	patterns = [r'.*\?v=(.{11})', r'\.be\/(.{11})']
+	patterns = [r'.*\?v=(.{11})', r'\.be\/(.{11})', r'embed\/(.{11})']
 	for i in patterns:
 		id = re.search(i, url)
 		if id:
