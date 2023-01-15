@@ -75,11 +75,16 @@ def getCookies():
 def getCont():
 	req = requests.get('https://www.youtube.com/feed/history',cookies=cookies)
 	cont = re.findall(r'continuationCommand":{"token":"(.+?)"',req.text)[0]
+	if not cont:
+		#will add a better logger later
+		print('make sure to export the cookies using get cookies.txt (a chrome extension)')
+		input('CTRL-C to Exit')
+
 	return cont
 
 def getData(auth, cont):
 
-	headers = {"origin":"https://www.youtube.com","authorization":auth}
+	headers = {"origin":"https://www.youtube.com","authorization":f"{auth}"}
 
 	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"16.05"}},"continuation":cont if cont else getCont()}
 
@@ -99,6 +104,7 @@ def main():
 	cookies = getCookies()
 
 	#print(getCont())
+	
 	auth = args.auth
 
 	History = history(getData(auth, None))
@@ -120,8 +126,6 @@ def main():
 		print("="*28)
 		page += 1
 		print("="*28)
-		if page >= 1:
-			break
 			
 
 	if args.output:
