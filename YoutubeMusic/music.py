@@ -64,10 +64,10 @@ def getUrl(data):
 		try:
 			mainData[i]["audioQuality"]
 		except KeyError:
-			continue	
+			continue
 
 		if mainData[i]["audioQuality"] == "AUDIO_QUALITY_MEDIUM":
-            
+
 			StrSplit = mainData[i]["signatureCipher"].split('&')
 			sig = StrSplit[0].split('=')[1]
 			url = StrSplit[2].split('=')[1]
@@ -80,7 +80,7 @@ def getUrl(data):
 def addthumbnail(name,imagefile):
 	audiofile = eyed3.load(f"{name}.mp3")
 	if (audiofile.tag == None):
-	    audiofile.initTag()
+		audiofile.initTag()
 
 	audiofile.tag.images.set(ImageFrame.FRONT_COVER, open(imagefile,'rb').read(), 'image/jpeg')
 
@@ -109,7 +109,7 @@ def colorful(title,author,data,thumbnail):
 	return f"{colored('Title:', 'yellow')} {title}\n{colored('Author:', 'yellow')} {author}\n{colored('Link:', 'blue')} {data}\n{colored('Thumbnail:', 'red')} {thumbnail}\n"
 
 def main():
-	parser = argparse.ArgumentParser(description='get a direct link from a youtube video')
+	parser = argparse.ArgumentParser(description='download music from youtube music')
 	parser.add_argument('-u','--url', help='one url')
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
