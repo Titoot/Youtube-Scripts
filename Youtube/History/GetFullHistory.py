@@ -1,13 +1,20 @@
 import requests
 import argparse
+import logging
 import json
+import sys
 import re
 
 class history:
 	def __init__(self, Data):
 		self.data = Data
 	def getMainPageCont(self):
-		return self.data["continuationContents"]["sectionListContinuation"]["continuations"][1]["reloadContinuationData"]["continuation"]
+		try:
+			cont = self.data["continuationContents"]["sectionListContinuation"]["continuations"][1]["reloadContinuationData"]["continuation"]
+			return cont
+		except KeyError:
+			logError('make sure that Auth token is set correctly')
+			
 	def getMainList(self):
 		return self.data["continuationContents"]["sectionListContinuation"]["contents"]
 
@@ -53,21 +60,29 @@ def getAPIKey():
 	API_KEY = jsParse["INNERTUBE_API_KEY"]
 
 	return API_KEY
-
+def logError(message):
+	logging.error(message)
+	sys.exit(1)
 def parseCookieFile(cookiefile):
-    """Parse a cookies.txt file and return a dictionary of key value pairs
-    compatible with requests."""
+	"""Parse a cookies.txt file and return a dictionary of key value pairs
+	compatible with requests."""
 
-    cookies = {}
-    with open (cookiefile, 'r') as fp:
-        for line in fp:
-            if not re.match(r'^\#', line):
-                lineFields = line.strip().split('\t')
-                try:
-                	cookies[lineFields[5]] = lineFields[6]
-                except:
-               		continue
-    return cookies
+	cookies = {}
+	try:
+	    with open (cookiefile, 'r') as fp:
+	        for line in fp:
+	            if not re.match(r'^\#', line):
+	                lineFields = line.strip().split('\t')
+	                try:
+	                	cookies[lineFields[5]] = lineFields[6]
+	                except:
+	               		continue
+	except FileNotFoundError:
+		logError('cookie file is not found, make sure that it\'s extracting using "get cookies.txt" and it\'s named "youtube.com_cookies.txt"')
+	except Exception as e:
+		logError(e)	
+
+	return cookies
 def getCookies():
 	cookies = parseCookieFile("youtube.com_cookies.txt")
 	return cookies
@@ -75,10 +90,9 @@ def getCookies():
 def getCont():
 	req = requests.get('https://www.youtube.com/feed/history',cookies=cookies)
 	cont = re.findall(r'continuationCommand":{"token":"(.+?)"',req.text)[0]
+
 	if not cont:
-		#will add a better logger later
-		print('make sure to export the cookies using get cookies.txt (a chrome extension)')
-		input('CTRL-C to Exit')
+		logError('make sure to export the cookies using get cookies.txt (a chrome extension)')
 
 	return cont
 
@@ -97,7 +111,11 @@ def main():
 	parser = argparse.ArgumentParser(description='scrap full youtube history')
 	parser.add_argument('-a','--auth', help='auth token, you can get it from here https://i.imgur.com/xf8gqgl.png in https://www.youtube.com/feed/history, if you can\'t find it scroll to the end of the page and try again')
 	parser.add_argument('-o','--output', help='output file, default "./output.txt"')
+	parser.add_argument('-v','--debug', help='debugging', action='store_true')
 	args = parser.parse_args()
+
+	if args.debug:
+		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 	global API_KEY,cookies
 	API_KEY = getAPIKey()
@@ -108,24 +126,22 @@ def main():
 	auth = args.auth
 
 	History = history(getData(auth, None))
-	print(History.getMainPageCont())
+	logging.debug(History.getMainPageCont())
 
 	History = history(getData(auth, History.getMainPageCont()))
 	page = 1
 	data = {}
 
 	while History.getNextCont():
-		print(f'Page Number: {page}')
-		print(f'ContinuationID: {History.getNextCont()}')
+		print(f'Page Number: {page}', end='\r')
+		logging.debug(f'ContinuationID: {History.getNextCont()}')
 		data[page] = []
 		HistoryVideos = History.getListVideos()
-		print(HistoryVideos)
+		logging.debug(HistoryVideos)
 		data[page].append(HistoryVideos)
 
 		History = history(getData(auth, History.getNextCont()))
-		print("="*28)
 		page += 1
-		print("="*28)
 			
 
 	if args.output:
