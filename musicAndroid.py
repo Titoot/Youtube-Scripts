@@ -9,6 +9,7 @@ import requests
 import argparse
 import json
 import re
+import os
 headers = {"origin":"https://music.youtube.com", "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
 class metadata:
 	def __init__(self, Data):  
@@ -47,12 +48,23 @@ def getData(id):
 	
 	API_KEY = getAPIKey()
 
-	data = {"context":{"client":{"clientName":"WEB_REMIX","clientVersion":"1.20230104.01.00"}},"videoId":f"{id}"}
+	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"16.05"}},"videoId":f"{id}"}
 
 	music = requests.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
 
 	musicData = json.loads(music.text)
 	return musicData
+
+def getDataMeta(id):
+	
+	API_KEY = getAPIKey()
+
+	data = {"context":{"client":{"clientName":"WEB_REMIX","clientVersion":"1.20230104.01.00"}},"videoId":f"{id}"}
+
+	music = requests.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
+
+	musicData = json.loads(music.text)
+	return musicData	
 	
 
 def getUrl(data):
@@ -68,15 +80,7 @@ def getUrl(data):
 
 		if mainData[i]["audioQuality"] == "AUDIO_QUALITY_MEDIUM":
             
-			StrSplit = mainData[i]["signatureCipher"].split('&')
-			sig = StrSplit[0].split('=')[1]
-			url = StrSplit[2].split('=')[1]
-			
-			decodedSig = quote(decoder.cta(unquote(sig)))
-
-			url = unquote(url)
-			decodedUrl = f"{url}&sig={decodedSig}"
-			return decodedUrl
+			return mainData[i]["url"]
 def addthumbnail(name,imagefile):
 	audiofile = eyed3.load(f"{name}.mp3")
 	if (audiofile.tag == None):
@@ -95,8 +99,9 @@ def tomp3(name):
 	os.remove(f"{name}.m4a")
 
 def download(url,title,author,thumbnail):
+	headers = {"range":"bytes=0-"}
 	name = f"Downloads\\{title} - {author}"
-	audio = requests.get(url, stream=True)
+	audio = requests.get(url, headers=headers,stream=True)
 	with open(f"{name}.m4a", "wb") as f:
 		f.write(audio.content)
 
@@ -128,7 +133,7 @@ def main():
 		playlist = getPlaylistIds(args.playlist)
 		for i in playlist:
 			musicData = getData(i)
-			MetaData = metadata(musicData)
+			MetaData = metadata(getDataMeta(i))
 			#print(getUrl(musicData))
 			url = getUrl(musicData)
 			print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
