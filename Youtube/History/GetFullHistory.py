@@ -110,6 +110,7 @@ def getData(auth, cont):
 def main():
 	parser = argparse.ArgumentParser(description='scrap full youtube history')
 	parser.add_argument('-a','--auth', help='auth token, you can get it from here https://i.imgur.com/xf8gqgl.png in https://www.youtube.com/feed/history, if you can\'t find it scroll to the end of the page and try again')
+	parser.add_argument('-l','--limit', help='set limit to number of pages')
 	parser.add_argument('-o','--output', help='output file, default "./output.txt"')
 	parser.add_argument('-v','--debug', help='debugging', action='store_true')
 	args = parser.parse_args()
@@ -142,6 +143,10 @@ def main():
 
 		History = history(getData(auth, History.getNextCont()))
 		page += 1
+
+		if args.limit:
+			if page > int(args.limit):
+				break 
 			
 
 	if args.output:
