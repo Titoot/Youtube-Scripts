@@ -118,46 +118,56 @@ def main():
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
 	#parser.add_argument('-i','--input', help='input file with urls')
-	parser.add_argument('-o','--output', help='output file, default "./output.txt"')
+	#parser.add_argument('-o','--output', help='output to file, default "./output.txt"')
 	args = parser.parse_args()
+	if not (args.url or args.playlist):
+		parser.error('No action requested, add --url or --playlist')
 
 	if args.url:
 		videoId = getID(args.url)
 		musicData = getData(videoId)
-		MetaData = metadata(musicData)
+		url = getUrl(musicData)
+		MetaData = metadata(getDataMeta(videoId))
 
-		print(colorful(MetaData.title(),MetaData.author(),musicData,MetaData.thumbnail()))
+		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
+
+		if args.download:
+				print(f'Downloading "{MetaData.title()}" now')
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
+				print(f'Done Downloading')
 
 	elif args.playlist:
 		playlist = getPlaylistIds(args.playlist)
 		for i in playlist:
 			musicData = getData(i)
 			MetaData = metadata(getDataMeta(i))
-			#print(getUrl(musicData))
 			url = getUrl(musicData)
+
 			print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
 
 			if args.download:
+				print(f'Downloading "{MetaData.title()}" now')
 				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
+				print(f'Done Downloading at ./Downloads')
 
-	elif args.input:
-		if not args.output:
-			print('output set to default: ./output.txt')
-			f = open('output.txt', 'w')
-
-		else:
-			print('output set to : '+ args.output)
-			f = open(args.output, 'w')		
-
-		with open(args.input, 'r') as f1:
-			for i in f1.readlines():
-
-				videoId = getID(i[:-1])
-
-				f.write(getUrl(videoId) + '\n')
-	else:
-		videoId = getID(input('Url:'))
-		print(getUrl(videoId))
+#	elif args.input:
+#		if not args.output:
+#			print('output set to default: ./output.txt')
+#			f = open('output.txt', 'w')
+#
+#		else:
+#			print('output set to : '+ args.output)
+#			f = open(args.output, 'w')		
+#
+#		with open(args.input, 'r') as f1:
+#			for i in f1.readlines():
+#
+#				videoId = getID(i[:-1])
+#
+#				f.write(getUrl(videoId) + '\n')
+#	else:
+#		videoId = getID(input('Url:'))
+#		print(getUrl(videoId))
 
 
 if __name__ == '__main__':
