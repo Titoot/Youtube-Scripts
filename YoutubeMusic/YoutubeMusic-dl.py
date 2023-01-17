@@ -1,4 +1,5 @@
 import eyed3
+import logging
 from eyed3.id3.frames import ImageFrame
 from urllib import request
 from termcolor import colored
@@ -6,6 +7,7 @@ from pydub import AudioSegment
 import requests
 import argparse
 import json
+import sys
 import re
 import os
 headers = {"origin":"https://music.youtube.com", "user-agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
@@ -114,8 +116,11 @@ def download(url,title,author,thumbnail, path="Downloads"):
 	cover = request.urlretrieve(thumbnail, 'cover.jpg')
 	addthumbnail(name,'cover.jpg')
 
-def colorful(title,author,data,thumbnail):
-	return f"{colored('Title:', 'yellow')} {title}\n{colored('Author:', 'yellow')} {author}\n{colored('Link:', 'blue')} {data}\n{colored('Thumbnail:', 'red')} {thumbnail}\n"
+def colorful(title,author,data,thumbnail,args):
+	string = f"{colored('Title:', 'yellow')} {title}\n{colored('Author:', 'yellow')} {author}\n"
+	if args.debug:
+		string += f"{colored('Link:', 'blue')} {data}\n{colored('Thumbnail:', 'red')} {thumbnail}\n"
+	return string
 
 def main():
 	parser = argparse.ArgumentParser(description='download music from youtube music')
@@ -123,10 +128,13 @@ def main():
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
 	parser.add_argument('-D','--outputFolder', help='specify output folder')
+	parser.add_argument('-v','--debug', help='debugging', action='store_true')
 
 	args = parser.parse_args()
 	if not (args.url or args.playlist):
 		parser.error('No action requested, add --url or --playlist')
+	if args.debug:
+		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 	if args.url:
 		videoId = getID(args.url)
@@ -134,7 +142,7 @@ def main():
 		url = getUrl(musicData)
 		MetaData = metadata(getDataMeta(videoId))
 
-		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
+		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail(),args))
 
 		if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
@@ -147,7 +155,7 @@ def main():
 			MetaData = metadata(getDataMeta(i))
 			url = getUrl(musicData)
 
-			print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
+			print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail(),args))
 
 			if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
