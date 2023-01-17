@@ -88,7 +88,9 @@ def addthumbnail(name,imagefile):
 	audiofile.tag.images.set(ImageFrame.FRONT_COVER, open(imagefile,'rb').read(), 'image/jpeg')
 
 	audiofile.tag.save()
-
+	os.remove('cover.jpg')
+def legalize(string):
+	return re.sub(r'[/*?:"<>|]',"",string)
 def tomp3(name):
 	# open the m4a file
 	m4a_audio = AudioSegment.from_file(f"{name}.m4a", format="m4a")
@@ -99,7 +101,10 @@ def tomp3(name):
 
 def download(url,title,author,thumbnail):
 	headers = {"range":"bytes=0-"}
-	name = f"Downloads\\{title} - {author}"
+	name = legalize(f"Downloads\\{title} - {author}")
+	if os.path.exists(f'{name}.mp3'):
+		print('file already exists')
+		return
 	audio = requests.get(url, headers=headers,stream=True)
 	with open(f"{name}.m4a", "wb") as f:
 		f.write(audio.content)
@@ -117,8 +122,7 @@ def main():
 	parser.add_argument('-u','--url', help='one url')
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
-	#parser.add_argument('-i','--input', help='input file with urls')
-	#parser.add_argument('-o','--output', help='output to file, default "./output.txt"')
+
 	args = parser.parse_args()
 	if not (args.url or args.playlist):
 		parser.error('No action requested, add --url or --playlist')
@@ -149,26 +153,6 @@ def main():
 				print(f'Downloading "{MetaData.title()}" now')
 				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
 				print(f'Done Downloading at ./Downloads')
-
-#	elif args.input:
-#		if not args.output:
-#			print('output set to default: ./output.txt')
-#			f = open('output.txt', 'w')
-#
-#		else:
-#			print('output set to : '+ args.output)
-#			f = open(args.output, 'w')		
-#
-#		with open(args.input, 'r') as f1:
-#			for i in f1.readlines():
-#
-#				videoId = getID(i[:-1])
-#
-#				f.write(getUrl(videoId) + '\n')
-#	else:
-#		videoId = getID(input('Url:'))
-#		print(getUrl(videoId))
-
 
 if __name__ == '__main__':
 	main()
