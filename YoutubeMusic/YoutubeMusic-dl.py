@@ -107,6 +107,7 @@ def download(url,title,author,thumbnail, path="Downloads"):
 	if os.path.exists(f'{name}.mp3'):
 		print('file already exists')
 		return
+	print(f'Downloading "{title}" now')
 	audio = requests.get(url, headers=headers,stream=True)
 	with open(f"{name}.m4a", "wb") as f:
 		f.write(audio.content)
@@ -145,7 +146,6 @@ def main():
 		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail(),args))
 
 		if args.download:
-				print(f'Downloading "{MetaData.title()}" now')
 				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
 
 	elif args.playlist:
@@ -158,8 +158,8 @@ def main():
 			print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail(),args))
 
 			if args.download:
-				print(f'Downloading "{MetaData.title()}" now')
 				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
+
 	if not args.outputFolder:
 		print('Done Downloading at ./Downloads')
 	else:
