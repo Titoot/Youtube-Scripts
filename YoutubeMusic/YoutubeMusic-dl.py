@@ -99,9 +99,9 @@ def tomp3(name):
 	m4a_audio.export(f"{name}.mp3", format="mp3")
 	os.remove(f"{name}.m4a")
 
-def download(url,title,author,thumbnail):
+def download(url,title,author,thumbnail, path="Downloads"):
 	headers = {"range":"bytes=0-"}
-	name = legalize(f"Downloads\\{title} - {author}")
+	name = os.path.join("Downloads",legalize(f"{title} - {author}"))
 	if os.path.exists(f'{name}.mp3'):
 		print('file already exists')
 		return
@@ -122,6 +122,7 @@ def main():
 	parser.add_argument('-u','--url', help='one url')
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
+	parser.add_argument('-D','--outputFolder', help='specify output folder')
 
 	args = parser.parse_args()
 	if not (args.url or args.playlist):
@@ -137,8 +138,7 @@ def main():
 
 		if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
-				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
-				print(f'Done Downloading')
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
 
 	elif args.playlist:
 		playlist = getPlaylistIds(args.playlist)
@@ -151,8 +151,11 @@ def main():
 
 			if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
-				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
-				print(f'Done Downloading at ./Downloads')
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
+	if not args.outputFolder:
+		print('Done Downloading at ./Downloads')
+	else:
+		print(f'Done Downloading at ./{args.outputFolder}')
 
 if __name__ == '__main__':
 	main()
