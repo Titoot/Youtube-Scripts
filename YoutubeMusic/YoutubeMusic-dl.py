@@ -97,9 +97,9 @@ def tomp3(name):
 	m4a_audio.export(f"{name}.mp3", format="mp3")
 	os.remove(f"{name}.m4a")
 
-def download(url,title,author,thumbnail):
+def download(url,title,author,thumbnail, path="Downloads"):
 	headers = {"range":"bytes=0-"}
-	name = f"Downloads\\{title} - {author}"
+	name = os.path.join("Downloads",f"{title} - {author}")
 	audio = requests.get(url, headers=headers,stream=True)
 	with open(f"{name}.m4a", "wb") as f:
 		f.write(audio.content)
@@ -118,7 +118,7 @@ def main():
 	parser.add_argument('-p','--playlist', help='get playlist')
 	parser.add_argument('-d','--download', help='download it', action='store_true')
 	#parser.add_argument('-i','--input', help='input file with urls')
-	#parser.add_argument('-o','--output', help='output to file, default "./output.txt"')
+	parser.add_argument('-D','--outputFolder', help='specify output folder')
 	args = parser.parse_args()
 	if not (args.url or args.playlist):
 		parser.error('No action requested, add --url or --playlist')
@@ -133,7 +133,7 @@ def main():
 
 		if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
-				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
 				print(f'Done Downloading')
 
 	elif args.playlist:
@@ -147,7 +147,7 @@ def main():
 
 			if args.download:
 				print(f'Downloading "{MetaData.title()}" now')
-				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
 				print(f'Done Downloading at ./Downloads')
 
 #	elif args.input:
