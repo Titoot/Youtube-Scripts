@@ -45,8 +45,6 @@ def getAPIKey():
 	return API_KEY
 
 def getData(id):
-	
-	API_KEY = getAPIKey()
 
 	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"16.05"}},"videoId":f"{id}"}
 
@@ -57,8 +55,6 @@ def getData(id):
 
 def getDataMeta(id):
 	
-	API_KEY = getAPIKey()
-
 	data = {"context":{"client":{"clientName":"WEB_REMIX","clientVersion":"1.20230104.01.00"}},"videoId":f"{id}"}
 
 	music = requests.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
@@ -91,8 +87,10 @@ def addthumbnail(name,imagefile):
 
 	audiofile.tag.save()
 	os.remove('cover.jpg')
+	
 def legalize(string):
 	return re.sub(r'[/*?:"<>|]',"",string)
+
 def tomp3(name):
 	# open the m4a file
 	m4a_audio = AudioSegment.from_file(f"{name}.m4a", format="m4a")
@@ -136,6 +134,9 @@ def main():
 		parser.error('No action requested, add --url or --playlist')
 	if args.debug:
 		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
+	global API_KEY
+	API_KEY = getAPIKey()
 
 	if args.url:
 		videoId = getID(args.url)
