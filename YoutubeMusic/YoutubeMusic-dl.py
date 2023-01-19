@@ -1,6 +1,7 @@
 import eyed3
 import logging
 from eyed3.id3.frames import ImageFrame
+from clint.textui import progress
 from urllib import request
 from termcolor import colored
 from pydub import AudioSegment
@@ -115,8 +116,16 @@ def download(url,title,author,thumbnail, path="Downloads"):
 		return
 	print(f'Downloading "{title}" now')
 	audio = session.get(url, headers=headers,stream=True)
+	total_length = int(audio.headers.get('content-length'))
 	with open(f"{name}.m4a", "wb") as f:
-		f.write(audio.content)
+
+		if total_length is None:
+			f.write(audio.content)
+		else:
+			for chunk in progress.bar(audio.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1): 
+				if chunk:
+					f.write(chunk)
+					f.flush()
 	tomp3(name)
 	cover = session.get(thumbnail)
 	with open('cover.jpg', 'wb') as f:
@@ -149,6 +158,7 @@ def main():
 	args = parser.parse_args()
 	if not (args.url or args.playlist):
 		parser.error('No action requested, add --url or --playlist')
+
 	if args.debug:
 		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
