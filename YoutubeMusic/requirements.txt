@@ -4,3 +4,4 @@ termcolor
 ffmpeg-python
 python-magic-bin
 eyeD3
+pydub
