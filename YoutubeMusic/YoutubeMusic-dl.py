@@ -84,11 +84,13 @@ def getUrl(data):
 
 			return mainData[i]["url"]
 
-def addthumbnail(name,imagefile):
+def addthumbnail(name,imagefile, author, title):
 	audiofile = eyed3.load(f"{name}.mp3")
 	if (audiofile.tag == None):
 		audiofile.initTag()
 
+	audiofile.tag.title = title
+	audiofile.tag.artist = author
 	audiofile.tag.images.set(ImageFrame.FRONT_COVER, open(imagefile,'rb').read(), 'image/jpeg')
 
 	audiofile.tag.save()
@@ -107,7 +109,7 @@ def tomp3(name):
 
 def download(url,title,author,thumbnail, path="Downloads"):
 	headers = {"range":"bytes=0-"}
-	name = os.path.join("Downloads",legalize(f"{title} - {author}"))
+	name = os.path.join("Downloads",legalize(f"{title}"))
 	if os.path.exists(f'{name}.mp3'):
 		print('file already exists')
 		return
@@ -120,7 +122,7 @@ def download(url,title,author,thumbnail, path="Downloads"):
 	with open('cover.jpg', 'wb') as f:
 		f.write(cover.content)
 
-	addthumbnail(name,'cover.jpg')
+	addthumbnail(name,'cover.jpg', author, title)
 
 def colorful(title,author,data,thumbnail,args):
 	string = f"{colored('Title:', 'yellow')} {title}\n{colored('Author:', 'yellow')} {author}\n"
