@@ -109,7 +109,7 @@ def tomp3(name):
 
 def download(url,title,author,thumbnail, path="Downloads"):
 	headers = {"range":"bytes=0-"}
-	name = os.path.join("Downloads",legalize(f"{title}"))
+	name = os.path.join(path,legalize(f"{title}"))
 	if os.path.exists(f'{name}.mp3'):
 		print('file already exists')
 		return
@@ -165,8 +165,10 @@ def main():
 
 		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail(),args))
 
-		if args.download:
+		if args.download and args.outputFolder is not None:
 				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail(),args.outputFolder)
+		elif args.download:
+				download(url,MetaData.title(),MetaData.author(),MetaData.thumbnail())
 
 	elif args.playlist:
 		playlist = getPlaylistIds(args.playlist)
