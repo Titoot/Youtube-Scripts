@@ -5,6 +5,8 @@ from urllib import request
 from termcolor import colored
 from pydub import AudioSegment
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import argparse
 import json
 import sys
@@ -31,12 +33,12 @@ def getID(url):
 			return id[1]
 
 def getPlaylistIds(url):
-	req = requests.get(url, headers=headers)
+	req = session.get(url, headers=headers)
 	data = re.findall(r'videoId\\x22:\\x22(.{11})\\x22\\x7d,\\x22multi', req.text)
 	return data
 
 def getAPIKey():
-	sw = requests.get('https://music.youtube.com/sw.js')
+	sw = session.get('https://music.youtube.com/sw.js')
 
 	script = re.findall(r'ytcfg\.set\(({.+?}},)',sw.text)[0].replace(r'}},',r'}}}')
 	jsParse = json.loads(script)
@@ -48,7 +50,7 @@ def getData(id):
 
 	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"16.05"}},"videoId":f"{id}"}
 
-	music = requests.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
+	music = session.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
 
 	musicData = json.loads(music.text)
 	return musicData
@@ -57,15 +59,19 @@ def getDataMeta(id):
 	
 	data = {"context":{"client":{"clientName":"WEB_REMIX","clientVersion":"1.20230104.01.00"}},"videoId":f"{id}"}
 
-	music = requests.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
+	music = session.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
 
 	musicData = json.loads(music.text)
 	return musicData	
 	
-
+def logError(message):
+	logging.error(message)
+	sys.exit(1)
 def getUrl(data):
-
-	mainData = data["streamingData"]["adaptiveFormats"]
+	try:
+		mainData = data["streamingData"]["adaptiveFormats"]
+	except KeyError:
+		logError(data)
 
 	for i in range(len(mainData)):
 
@@ -106,13 +112,14 @@ def download(url,title,author,thumbnail, path="Downloads"):
 		print('file already exists')
 		return
 	print(f'Downloading "{title}" now')
-	audio = requests.get(url, headers=headers,stream=True)
+	audio = session.get(url, headers=headers,stream=True)
 	with open(f"{name}.m4a", "wb") as f:
 		f.write(audio.content)
-
 	tomp3(name)
+	cover = session.get(thumbnail)
+	with open('cover.jpg', 'wb') as f:
+		f.write(cover.content)
 
-	cover = request.urlretrieve(thumbnail, 'cover.jpg')
 	addthumbnail(name,'cover.jpg')
 
 def colorful(title,author,data,thumbnail,args):
@@ -120,6 +127,14 @@ def colorful(title,author,data,thumbnail,args):
 	if args.debug:
 		string += f"{colored('Link:', 'blue')} {data}\n{colored('Thumbnail:', 'red')} {thumbnail}\n"
 	return string
+
+def setupRequests():
+	global session
+	session = requests.Session()
+	retry = Retry(connect=3, backoff_factor=0.5)
+	adapter = HTTPAdapter(max_retries=retry)
+	session.mount('http://', adapter)
+	session.mount('https://', adapter)
 
 def main():
 	parser = argparse.ArgumentParser(description='download music from youtube music')
@@ -134,6 +149,8 @@ def main():
 		parser.error('No action requested, add --url or --playlist')
 	if args.debug:
 		logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
+	setupRequests()
 
 	global API_KEY
 	API_KEY = getAPIKey()
