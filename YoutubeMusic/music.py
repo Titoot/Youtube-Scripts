@@ -121,8 +121,9 @@ def main():
 		videoId = getID(args.url)
 		musicData = getData(videoId)
 		MetaData = metadata(musicData)
+		url = getUrl(musicData)
 
-		print(colorful(MetaData.title(),MetaData.author(),musicData,MetaData.thumbnail()))
+		print(colorful(MetaData.title(),MetaData.author(),url,MetaData.thumbnail()))
 
 	elif args.playlist:
 		playlist = getPlaylistIds(args.playlist)
