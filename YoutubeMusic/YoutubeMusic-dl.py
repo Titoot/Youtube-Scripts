@@ -84,7 +84,7 @@ def getUrl(data):
 
 			return mainData[i]["url"]
 
-def addthumbnail(name,imagefile, author, title):
+def addmetadata(name,imagefile, author, title):
 	audiofile = eyed3.load(f"{name}.mp3")
 	if (audiofile.tag == None):
 		audiofile.initTag()
@@ -122,7 +122,7 @@ def download(url,title,author,thumbnail, path="Downloads"):
 	with open('cover.jpg', 'wb') as f:
 		f.write(cover.content)
 
-	addthumbnail(name,'cover.jpg', author, title)
+	addmetadata(name,'cover.jpg', author, title)
 
 def colorful(title,author,data,thumbnail,args):
 	string = f"{colored('Title:', 'yellow')} {title}\n{colored('Author:', 'yellow')} {author}\n"
