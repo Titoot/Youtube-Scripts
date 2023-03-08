@@ -48,7 +48,7 @@ cd Youtube-Scripts/Youtube/History
 python -m pip install -r requirements.txt
 python GetFullHistory.py
 ```
-make sure to add the cookies file and get the auth from youtube [history page](https://youtube.com/feed/history), the cookies can be extracted by using [get cookies.txt](https://chrome.google.com/webstore/detail/get-cookiestxt/bgaddhkoddajcdgocldbbfleckgcbcid?hl=en)
+make sure to add the cookies file and get the auth from youtube [history page](https://youtube.com/feed/history), the cookies can be extracted by using [get cookies.txt](https://github.com/kairi003/Get-cookies.txt-LOCALLY)
 ### help menu
 ```bash
 python GetFullHistory.py -h
