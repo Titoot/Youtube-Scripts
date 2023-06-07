@@ -48,16 +48,16 @@ def getAPIKey():
 	return API_KEY
 
 def getData(id):
+	headersNew = headers
+	headersNew["user-agent"] = "com.google.android.youtube/18.16.34"
+	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"18.16.34", "androidSdkVersion":33}},"videoId":f"{id}"}
 
-	data = {"context":{"client":{"clientName":"ANDROID","clientVersion":"16.05"}},"videoId":f"{id}"}
-
-	music = session.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
+	music = session.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headersNew, json=data)
 
 	musicData = json.loads(music.text)
 	return musicData
 
 def getDataMeta(id):
-	
 	data = {"context":{"client":{"clientName":"WEB_REMIX","clientVersion":"1.20230104.01.00"}},"videoId":f"{id}"}
 
 	music = session.post(f'https://music.youtube.com/youtubei/v1/player?key={API_KEY}', headers=headers, json=data)
